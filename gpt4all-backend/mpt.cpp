@@ -770,7 +770,7 @@ bool MPT::loadModel(const std::string &modelPath) {
 
     // load the model
     if (!mpt_model_load(modelPath, fin, *d_ptr->model, d_ptr->vocab)) {
-        std::cerr << "GPT-J ERROR: failed to load model from " <<  modelPath;
+        std::cerr << "MPT ERROR: failed to load model from " <<  modelPath;
         return false;
     }
 
@@ -822,7 +822,7 @@ void MPT::prompt(const std::string &prompt,
         PromptContext &promptCtx) {
 
     if (!isModelLoaded()) {
-        std::cerr << "GPT-J ERROR: prompt won't work with an unloaded model!\n";
+        std::cerr << "MPT ERROR: prompt won't work with an unloaded model!\n";
         return;
     }
 
@@ -834,7 +834,7 @@ void MPT::prompt(const std::string &prompt,
 
     if ((int) embd_inp.size() > promptCtx.n_ctx - 4) {
         responseCallback(-1, "ERROR: The prompt size exceeds the context window size and cannot be processed.");
-        std::cerr << "GPT-J ERROR: The prompt is" << embd_inp.size() <<
+        std::cerr << "MPT ERROR: The prompt is" << embd_inp.size() <<
             "tokens and the context window is" << promptCtx.n_ctx << "!\n";
         return;
     }
