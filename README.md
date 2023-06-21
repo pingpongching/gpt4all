@@ -49,14 +49,6 @@ Direct Installer Links:
 
 * [Ubuntu](https://gpt4all.io/installers/gpt4all-installer-linux.run)
 
-If you have older hardware that only supports avx and not avx2 you can use these.
-
-* [Mac/OSX - avx-only](https://gpt4all.io/installers/gpt4all-installer-darwin-avx-only.dmg)
-
-* [Windows - avx-only](https://gpt4all.io/installers/gpt4all-installer-win64-avx-only.exe)
-
-* [Ubuntu - avx-only](https://gpt4all.io/installers/gpt4all-installer-linux-avx-only.run)
-
 Find the most up-to-date information on the [GPT4All Website](https://gpt4all.io/)
 
 ### Chat Client building and running
@@ -69,6 +61,7 @@ Find the most up-to-date information on the [GPT4All Website](https://gpt4all.io
 * <a href="https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/typescript">:computer: Official Typescript Bindings</a>
 * <a href="https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/golang">:computer: Official GoLang Bindings</a>
 * <a href="https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/csharp">:computer: Official C# Bindings</a>
+* <a href="https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/java">:computer: Official Java Bindings</a>
 
 
 ## Contributing

@@ -25,8 +25,19 @@ LLM::LLM()
     , m_serverEnabled(false)
     , m_compatHardware(true)
 {
-    connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
-        this, &LLM::aboutToQuit);
+    QString llmodelSearchPaths = QCoreApplication::applicationDirPath();
+    const QString libDir = QCoreApplication::applicationDirPath() + "/../lib/";
+    if (directoryExists(libDir))
+        llmodelSearchPaths += ";" + libDir;
+#if defined(Q_OS_MAC)
+    const QString binDir = QCoreApplication::applicationDirPath() + "/../../../";
+    if (directoryExists(binDir))
+        llmodelSearchPaths += ";" + binDir;
+    const QString frameworksDir = QCoreApplication::applicationDirPath() + "/../Frameworks/";
+    if (directoryExists(frameworksDir))
+        llmodelSearchPaths += ";" + frameworksDir;
+#endif
+    LLModel::setImplementationsSearchPath(llmodelSearchPaths.toStdString());
     connect(this, &LLM::serverEnabledChanged,
         m_chatListModel, &ChatListModel::handleServerEnabledChanged);
 
@@ -108,9 +119,4 @@ void LLM::setServerEnabled(bool enabled)
         return;
     m_serverEnabled = enabled;
     emit serverEnabledChanged();
-}
-
-void LLM::aboutToQuit()
-{
-    m_chatListModel->saveChats();
 }

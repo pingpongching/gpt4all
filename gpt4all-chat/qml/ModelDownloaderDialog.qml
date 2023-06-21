@@ -49,10 +49,20 @@ Dialog {
 
         Label {
             id: listLabel
-            text: "Available Models:"
+            text: qsTr("Available Models:")
             Layout.alignment: Qt.AlignLeft
             Layout.fillWidth: true
             color: theme.textColor
+        }
+
+        Label {
+            visible: !Download.modelList.length
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            horizontalAlignment: Qt.AlignHCenter
+            verticalAlignment: Qt.AlignVCenter
+            text: qsTr("Network error: could not retrieve http://gpt4all.io/models/models.json")
+            color: theme.mutedTextColor
         }
 
         ScrollView {
@@ -83,7 +93,7 @@ Dialog {
                         id: modelName
                         objectName: "modelName"
                         property string filename: modelData.filename
-                        text: !modelData.isChatGPT ? filename.slice(5, filename.length - 4) : filename
+                        text: !modelData.isChatGPT ? (filename.startsWith("ggml-") ? filename.slice(5, filename.length - 4) : filename.slice(0, filename.length - 4)) : filename
                         padding: 20
                         anchors.top: parent.top
                         anchors.left: parent.left

@@ -77,20 +77,16 @@ public:
 
     static const std::vector<Implementation>& implementationList();
     static const Implementation *implementation(std::ifstream& f, const std::string& buildVariant);
-    static LLModel *construct(const std::string &modelPath, std::string buildVariant = "default");
+    static LLModel *construct(const std::string &modelPath, std::string buildVariant = "auto");
 
-    static inline void setImplementationsSearchPath(const std::string& path) {
-        m_implementations_search_path = path;
-    }
-    static inline const std::string& implementationsSearchPath() {
-        return m_implementations_search_path;
-    }
+    static void setImplementationsSearchPath(const std::string& path);
+    static const std::string& implementationsSearchPath();
 
 protected:
     // These are pure virtual because subclasses need to implement as the default implementation of
     // 'prompt' above calls these functions
     virtual std::vector<Token> tokenize(PromptContext &, const std::string&) const = 0;
-    virtual std::string_view tokenToString(Token) const = 0;
+    virtual std::string tokenToString(Token) const = 0;
     virtual Token sampleToken(PromptContext &ctx) const = 0;
     virtual bool evalTokens(PromptContext &/*ctx*/, const std::vector<int32_t>& /*tokens*/) const = 0;
     virtual int32_t contextLength() const = 0;
@@ -101,6 +97,5 @@ protected:
     void recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate);
 
     const Implementation *m_implementation = nullptr;
-    static std::string m_implementations_search_path;
 };
 #endif // LLMODEL_H

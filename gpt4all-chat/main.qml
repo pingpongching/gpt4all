@@ -7,6 +7,7 @@ import Qt5Compat.GraphicalEffects
 import llm
 import download
 import network
+import gpt4all
 
 Window {
     id: window
@@ -23,6 +24,25 @@ Window {
 
     property var currentChat: LLM.chatListModel.currentChat
     property var chatModel: currentChat.chatModel
+    property bool hasSaved: false
+
+    onClosing: function(close) {
+        if (window.hasSaved)
+            return;
+
+        savingPopup.open();
+        LLM.chatListModel.saveChats();
+        close.accepted = false
+    }
+
+    Connections {
+        target: LLM.chatListModel
+        function onSaveChatsFinished() {
+            window.hasSaved = true;
+            savingPopup.close();
+            window.close()
+        }
+    }
 
     color: theme.backgroundDarkest
 
@@ -304,8 +324,7 @@ Window {
         height: 40
         z: 200
         padding: 15
-        checkable: true
-        checked: Network.isActive
+        toggled: Network.isActive
         source: "qrc:/gpt4all/icons/network.svg"
         Accessible.name: qsTr("Network button")
         Accessible.description: qsTr("Reveals a dialogue where you can opt-in for sharing data over network")
@@ -341,8 +360,7 @@ Window {
         height: 40
         z: 200
         padding: 15
-        checkable: true
-        checked: currentChat.collectionList.length
+        toggled: currentChat.collectionList.length
         source: "qrc:/gpt4all/icons/db.svg"
         Accessible.name: qsTr("Add collections of documents to the chat")
         Accessible.description: qsTr("Provides a button to add collections of documents to the chat")
@@ -378,6 +396,12 @@ Window {
     }
 
     PopupDialog {
+        id: copyCodeMessage
+        anchors.centerIn: parent
+        text: qsTr("Code copied to clipboard.")
+    }
+
+    PopupDialog {
         id: healthCheckFailed
         anchors.centerIn: parent
         text: qsTr("Connection to datalake failed.")
@@ -399,6 +423,14 @@ Window {
                     recalcPopup.close()
             }
         }
+    }
+
+    PopupDialog {
+        id: savingPopup
+        anchors.centerIn: parent
+        shouldTimeOut: false
+        shouldShowBusy: true
+        text: qsTr("Saving chats.")
     }
 
     MyToolButton {
@@ -580,11 +612,12 @@ Window {
                     Accessible.description: qsTr("This is the list of prompt/response pairs comprising the actual conversation with the model")
 
                     delegate: TextArea {
+                        id: myTextArea
                         text: value + references
                         width: listView.width
                         color: theme.textColor
                         wrapMode: Text.WordWrap
-                        textFormat: TextEdit.MarkdownText
+                        textFormat: TextEdit.PlainText
                         focus: false
                         readOnly: true
                         font.pixelSize: theme.fontSizeLarge
@@ -596,6 +629,32 @@ Window {
                                 ? (currentChat.isServer ? theme.backgroundDarkest : theme.backgroundLighter)
                                 : (currentChat.isServer ? theme.backgroundDark : theme.backgroundLight)
                         }
+                        TapHandler {
+                            id: tapHandler
+                            onTapped: function(eventPoint, button) {
+                                var clickedPos = myTextArea.positionAt(eventPoint.position.x, eventPoint.position.y);
+                                var link = responseText.getLinkAtPosition(clickedPos);
+                                if (link.startsWith("context://")) {
+                                    var integer = parseInt(link.split("://")[1]);
+                                    referenceContextDialog.text = referencesContext[integer - 1];
+                                    referenceContextDialog.open();
+                                } else {
+                                    var success = responseText.tryCopyAtPosition(clickedPos);
+                                    if (success)
+                                        copyCodeMessage.open();
+                                }
+                            }
+                        }
+
+                        ResponseText {
+                            id: responseText
+                        }
+
+                        Component.onCompleted: {
+                            responseText.setLinkColor(theme.linkColor);
+                            responseText.setHeaderColor(name === qsTr("Response: ") ? theme.backgroundLight : theme.backgroundLighter);
+                            responseText.textDocument = textDocument
+                        }
 
                         Accessible.role: Accessible.Paragraph
                         Accessible.name: name
@@ -605,14 +664,6 @@ Window {
                         bottomPadding: 20
                         leftPadding: 70
                         rightPadding: 100
-
-                        onLinkActivated: function (link) {
-                            if (!link.startsWith("context://"))
-                                return
-                            var integer = parseInt(link.split("://")[1]);
-                            referenceContextDialog.text = referencesContext[integer - 1];
-                            referenceContextDialog.open();
-                        }
 
                         Item {
                             anchors.left: parent.left
@@ -819,6 +870,16 @@ Window {
             padding: 15
             text: currentChat.responseInProgress ? qsTr("Stop generating") : qsTr("Regenerate response")
             Accessible.description: qsTr("Controls generation of the response")
+        }
+
+        Text {
+            id: speed
+            anchors.bottom: textInputView.top
+            anchors.bottomMargin: 20
+            anchors.right: parent.right
+            anchors.rightMargin: 30
+            color: theme.mutedTextColor
+            text: currentChat.tokenSpeed
         }
 
         RectangularGlow {

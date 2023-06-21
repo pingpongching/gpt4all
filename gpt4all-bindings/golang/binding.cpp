@@ -24,11 +24,12 @@ void* load_model(const char *fname, int n_threads) {
                 __func__, new_error.message);
         return nullptr;
     }
-    llmodel_setThreadCount(model,  n_threads);
     if (!llmodel_loadModel(model, fname)) {
+        llmodel_model_destroy(model);
         return nullptr;
     }
 
+    llmodel_setThreadCount(model,  n_threads);
     return model;
 }
 
